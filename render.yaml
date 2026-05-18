@@ -23,7 +23,9 @@ services:
       - key: MAIL_USERNAME
         value: principemerinosheila@gmail.com
       - key: MAIL_PASSWORD
-        value: czpgcumwtttlcybx
+        value: cqnbqvkwjqlvgief
+      - key: MAIL_FROM
+        value: principemerinosheila@gmail.com
       
       # Otros
       - key: UPLOAD_DIR
