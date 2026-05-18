@@ -34,7 +34,11 @@ public class Court {
 
     private Double latitude;
     private Double longitude;
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
+
+    private String city;
+    private String district;
 
     @Builder.Default
     @Column(nullable = false)

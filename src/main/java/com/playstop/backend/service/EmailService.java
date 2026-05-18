@@ -1,6 +1,7 @@
 package com.playstop.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -168,7 +169,81 @@ public class EmailService {
         sendHtmlEmail(toEmail, "👋 Bienvenido a PlayStop", buildEmail(content));
     }
 
-    // ─── EMAIL: CONFIRMACIÓN DE RESERVA ──────────────────────────────────────
+    // ─── EMAIL: CONFIRMACIÓN DE RESERVA (con QR adjunto) ─────────────────────
+
+    @Async
+    public void sendReservationConfirmationWithQr(String toEmail, String userName,
+                                                   String courtName, String date, String slot,
+                                                   String reservationId, byte[] qrBytes) {
+        String content = """
+            %s
+            <h2 style="margin:0 0 8px; color:#1e293b; font-size:24px; font-weight:700;">
+                ¡Reserva confirmada! ✅
+            </h2>
+            <p style="margin:0 0 28px; color:#64748b; font-size:15px; line-height:1.7;">
+                Hola <strong>%s</strong>, tu reserva está lista.
+                Presenta el código QR al ingresar a la instalación.
+            </p>
+
+            <table width="100%%" cellpadding="0" cellspacing="0"
+                   style="border:1px solid #e2e8f0; border-radius:12px;
+                          overflow:hidden; margin-bottom:28px;">
+                %s
+                %s
+                %s
+                %s
+            </table>
+
+            <table width="100%%" cellpadding="0" cellspacing="0"
+                   style="background:#f8fafc; border:1px dashed #cbd5e1;
+                          border-radius:16px; margin-bottom:28px;">
+                <tr>
+                    <td style="padding:28px; text-align:center;">
+                        <p style="margin:0 0 16px; color:#475569; font-size:13px;
+                                  font-weight:700; text-transform:uppercase; letter-spacing:1px;">
+                            Tu código de entrada
+                        </p>
+                        <img src="cid:qrCode" alt="Código QR de reserva"
+                             style="width:200px; height:200px; border-radius:12px;
+                                    display:block; margin:0 auto;" />
+                        <p style="margin:14px 0 0; color:#94a3b8; font-size:11px; font-family:monospace;">
+                            ID: %s
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
+            <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+                        border:1px solid #bbf7d0; border-radius:12px;
+                        padding:16px 20px; text-align:center;">
+                <p style="margin:0; color:#15803d; font-size:13px; font-weight:600;">
+                    💡 Recuerda llegar 10 minutos antes — muestra este QR en recepción
+                </p>
+            </div>
+        """.formatted(
+            badge("#0ea5e9", "RESERVA CONFIRMADA"),
+            userName,
+            detailRow("🏟️", "CANCHA", courtName),
+            detailRow("📅", "FECHA", date),
+            detailRow("⏰", "HORARIO", slot),
+            detailRow("👤", "CLIENTE", userName),
+            reservationId
+        );
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(toEmail);
+            helper.setSubject("✅ Reserva confirmada - PlayStop");
+            helper.setText(buildEmail(content), true);
+            helper.addInline("qrCode", new ByteArrayResource(qrBytes), "image/png");
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error al enviar email con QR: " + e.getMessage());
+        }
+    }
+
+    // ─── EMAIL: CONFIRMACIÓN DE RESERVA (sin QR — fallback) ──────────────────
 
     @Async
     public void sendReservationConfirmation(String toEmail, String userName,
@@ -207,6 +282,53 @@ public class EmailService {
         );
 
         sendHtmlEmail(toEmail, "✅ Reserva confirmada - PlayStop", buildEmail(content));
+    }
+
+    // ─── EMAIL: NUEVA RESERVA (notificación al propietario) ──────────────────
+
+    @Async
+    public void sendNewReservationNotificationToOwner(String ownerEmail, String ownerName,
+                                                       String clientName, String clientEmail,
+                                                       String courtName, String date, String slot,
+                                                       String reservationId, double amount) {
+        String content = """
+            %s
+            <h2 style="margin:0 0 8px; color:#1e293b; font-size:24px; font-weight:700;">
+                Nueva reserva recibida 🎉
+            </h2>
+            <p style="margin:0 0 28px; color:#64748b; font-size:15px; line-height:1.7;">
+                Hola <strong>%s</strong>, tienes una nueva reserva confirmada
+                en tu cancha. Aquí están los detalles:
+            </p>
+
+            <table width="100%%" cellpadding="0" cellspacing="0"
+                   style="border:1px solid #e2e8f0; border-radius:12px;
+                          overflow:hidden; margin-bottom:28px;">
+                %s
+                %s
+                %s
+                %s
+                %s
+            </table>
+
+            <div style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);
+                        border:1px solid #bbf7d0; border-radius:12px;
+                        padding:16px 20px; text-align:center;">
+                <p style="margin:0; color:#15803d; font-size:13px; font-weight:600;">
+                    💡 Recuerda tener la cancha lista para recibir al cliente
+                </p>
+            </div>
+        """.formatted(
+            badge("#8b5cf6", "🏟️ NUEVA RESERVA"),
+            ownerName,
+            detailRow("👤", "CLIENTE", clientName),
+            detailRow("✉️", "EMAIL", clientEmail),
+            detailRow("🏟️", "CANCHA", courtName),
+            detailRow("📅", "FECHA", date),
+            detailRow("⏰", "HORARIO", slot)
+        );
+
+        sendHtmlEmail(ownerEmail, "🏟️ Nueva reserva en " + courtName + " - PlayStop", buildEmail(content));
     }
 
     // ─── EMAIL: CANCELACIÓN ───────────────────────────────────────────────────

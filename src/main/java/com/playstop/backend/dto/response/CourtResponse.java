@@ -20,4 +20,6 @@ public class CourtResponse {
     private boolean active;
     private String ownerName;
     private String ownerEmail;
+    private String city;
+    private String district;
 }

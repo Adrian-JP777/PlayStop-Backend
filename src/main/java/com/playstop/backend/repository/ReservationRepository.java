@@ -28,4 +28,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
     List<Reservation> findByDateAndSlotHourAndStatus(
         LocalDate date, int slotHour, ReservationStatus status
     );
+
+    long countByStatus(ReservationStatus status);
+
+    List<Reservation> findByUser_Role(com.playstop.backend.enums.Role role);
 }

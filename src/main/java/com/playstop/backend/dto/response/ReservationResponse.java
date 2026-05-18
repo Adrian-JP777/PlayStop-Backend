@@ -22,4 +22,7 @@ public class ReservationResponse {
     private BigDecimal totalAmount;
     private ReservationStatus status;
     private LocalDateTime createdAt;
+    // Client info — visible to the court owner
+    private String clientName;
+    private String clientEmail;
 }

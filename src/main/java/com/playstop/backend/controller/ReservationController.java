@@ -5,6 +5,7 @@ import com.playstop.backend.dto.response.ReservationResponse;
 import com.playstop.backend.service.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +50,31 @@ public class ReservationController {
     public ResponseEntity<List<ReservationResponse>> getReservationsByCourt(
             @PathVariable UUID courtId) {
         return ResponseEntity.ok(reservationService.getReservationsByCourt(courtId));
+    }
+
+    @PatchMapping("/{id}/cancel-by-owner")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ReservationResponse> cancelReservationByOwner(@PathVariable UUID id) {
+        return ResponseEntity.ok(reservationService.cancelReservationByOwner(id));
+    }
+
+    @GetMapping(value = "/{id}/qr", produces = MediaType.IMAGE_PNG_VALUE)
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<byte[]> getReservationQr(@PathVariable UUID id) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(reservationService.getReservationQr(id));
+    }
+
+    @GetMapping("/verify/{id}")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ReservationResponse> verifyReservation(@PathVariable UUID id) {
+        return ResponseEntity.ok(reservationService.verifyReservation(id));
+    }
+
+    @PatchMapping("/{id}/confirm-attendance")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ReservationResponse> confirmAttendance(@PathVariable UUID id) {
+        return ResponseEntity.ok(reservationService.confirmAttendance(id));
     }
 }

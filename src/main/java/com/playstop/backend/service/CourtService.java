@@ -12,6 +12,7 @@ import com.playstop.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CourtService {
 
@@ -52,6 +54,9 @@ public class CourtService {
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .imageUrl(request.getImageUrl())
+                .city(request.getCity())
+                .district(request.getDistrict())
+                .active(true)
                 .owner(owner)
                 .build();
         return toResponse(courtRepository.save(court));
@@ -74,6 +79,8 @@ public class CourtService {
         court.setLatitude(request.getLatitude());
         court.setLongitude(request.getLongitude());
         court.setImageUrl(request.getImageUrl());
+        court.setCity(request.getCity());
+        court.setDistrict(request.getDistrict());
 
         return toResponse(courtRepository.save(court));
     }
@@ -137,6 +144,8 @@ public class CourtService {
                 .active(court.isActive())
                 .ownerName(court.getOwner().getName())
                 .ownerEmail(court.getOwner().getEmail())
+                .city(court.getCity())
+                .district(court.getDistrict())
                 .build();
     }
 }

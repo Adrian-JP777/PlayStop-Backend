@@ -26,4 +26,6 @@ public class CourtRequest {
     private Double latitude;
     private Double longitude;
     private String imageUrl;
+    private String city;
+    private String district;
 }
