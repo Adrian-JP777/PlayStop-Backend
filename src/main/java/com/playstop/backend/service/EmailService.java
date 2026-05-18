@@ -1,13 +1,13 @@
 package com.playstop.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
 @Service
@@ -15,6 +15,9 @@ import jakarta.mail.internet.MimeMessage;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+
+    @Value("${app.mail.from}")
+    private String fromEmail;
 
     // ─── PLANTILLA BASE ───────────────────────────────────────────────────────
 
@@ -233,12 +236,13 @@ public class EmailService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail, "PlayStop");
             helper.setTo(toEmail);
             helper.setSubject("✅ Reserva confirmada - PlayStop");
             helper.setText(buildEmail(content), true);
             helper.addInline("qrCode", new ByteArrayResource(qrBytes), "image/png");
             mailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error al enviar email con QR: " + e.getMessage());
         }
     }
@@ -468,11 +472,12 @@ public class EmailService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom(fromEmail, "PlayStop");
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlBody, true);
             mailSender.send(message);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error al enviar email: " + e.getMessage());
         }
     }
