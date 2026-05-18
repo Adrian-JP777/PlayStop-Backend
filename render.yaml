@@ -19,11 +19,15 @@ services:
       - key: APP_BASE_URL
         value: https://playstop-backend.onrender.com
       
-      # Correo (Gmail App Password)
+      # Correo (Brevo SMTP) — MAIL_PASSWORD se configura manualmente en Render dashboard
+      - key: MAIL_HOST
+        value: smtp-relay.brevo.com
+      - key: MAIL_PORT
+        value: 587
       - key: MAIL_USERNAME
-        value: principemerinosheila@gmail.com
+        value: abb43a001@smtp-brevo.com
       - key: MAIL_PASSWORD
-        value: cqnbqvkwjqlvgief
+        sync: false
       - key: MAIL_FROM
         value: principemerinosheila@gmail.com
       
