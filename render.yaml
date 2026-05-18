@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: playstop-backend
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/courts
+    envVars:
+      - key: DB_URL
+        value: jdbc:postgresql://ep-sparkling-lake-aq3xvj05-pooler.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require
+      - key: DB_USERNAME
+        value: neondb_owner
+      - key: DB_PASSWORD
+        value: npg_IZLsf7yY5JPz
+      - key: JWT_SECRET
+        value: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      - key: MAIL_USERNAME
+        value: principemerinosheila@gmail.com
+      - key: MAIL_PASSWORD
+        value: czpgcumwtttlcybx
+      - key: UPLOAD_DIR
+        value: /tmp/uploads
+      - key: APP_BASE_URL
+        value: https://playstop-backend.onrender.com
