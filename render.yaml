@@ -19,7 +19,7 @@ services:
       - key: APP_BASE_URL
         value: https://playstop-backend.onrender.com
       
-      # Correo
+      # Correo (Gmail App Password)
       - key: MAIL_USERNAME
         value: principemerinosheila@gmail.com
       - key: MAIL_PASSWORD
