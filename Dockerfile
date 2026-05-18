@@ -1,21 +1,22 @@
-FROM eclipse-temurin:17-jdk-alpine AS build
+# Etapa 1: Construcción (Build)
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
 
-COPY mvnw .
-COPY .mvn .mvn
+# Copiamos el pom y el código fuente
 COPY pom.xml .
-RUN ./mvnw dependency:go-offline -B
+COPY src ./src
 
-COPY src src
-RUN ./mvnw clean package -DskipTests -B
+# CAMBIO CLAVE: Usamos 'mvn' en lugar de './mvnw' 
+# Esto evita el error 126 de permisos de ejecución
+RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:17-jre-alpine
+# Etapa 2: Ejecución (Runtime)
+FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
-RUN mkdir -p /tmp/uploads
-
-COPY --from=build /app/target/*.jar app.jar
+# Copiamos el .jar generado (Asegúrate de que el nombre coincida con tu pom.xml)
+COPY --from=build /app/target/playstop-backend-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
